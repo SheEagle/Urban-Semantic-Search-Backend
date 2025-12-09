@@ -4,10 +4,22 @@ from qdrant_client import QdrantClient
 from backend.app.core.config import settings
 from backend.app.utils.feature_extractor import PEFeatureExtractor
 
+from sentence_transformers import SentenceTransformer
+
 
 class GlobalState:
     _db_client: QdrantClient = None
     _feature_extractor: PEFeatureExtractor = None
+
+    _text_model = None
+
+    @classmethod
+    def get_text_model(cls):
+        if cls._text_model is None:
+            print("📖 Loading MiniLM for Text-to-Text Search...")
+            # 确保服务器能连网下载，或者指定本地路径
+            cls._text_model = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')
+        return cls._text_model
 
     @classmethod
     def get_db(cls) -> QdrantClient:
@@ -38,7 +50,7 @@ class GlobalState:
         return cls._db_client
 
     @classmethod
-    def get_model(cls) -> PEFeatureExtractor:
+    def get_pe_model(cls) -> PEFeatureExtractor:
         """
         模型单例
         """
@@ -55,4 +67,5 @@ class GlobalState:
 # 初始化函数
 def init_resources():
     GlobalState.get_db()
-    GlobalState.get_model()
+    GlobalState.get_pe_model()
+    GlobalState.get_text_model()

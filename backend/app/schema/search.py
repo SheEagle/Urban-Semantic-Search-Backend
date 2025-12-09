@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import List, Optional, Any, Dict
 
+
 # 1. 定义过滤器模型
 class SearchFilters(BaseModel):
     year_start: Optional[int] = None
@@ -17,14 +18,26 @@ class TextSearchRequest(BaseModel):
     filters: Optional[SearchFilters] = None  # 新增字段
 
 
+# class SearchResultItem(BaseModel):
+#     id: str
+#     score: float
+#     lat: float
+#     lng: float
+#     pixel_coords: List[int]
+#     geo_polygon: Optional[Dict[str, Any]] = None
+#     image_source: Optional[str] = None
+
+
 class SearchResultItem(BaseModel):
     id: str
     score: float
     lat: float
     lng: float
-    pixel_coords: List[int]
-    geo_polygon: Optional[Dict[str, Any]] = None
-    image_source: Optional[str] = None
+    pixel_coords: Optional[List[int]] = None  # 地图特有
+    image_source: Optional[str] = None  # 来源名称
+    content: Optional[str] = None  # 🔥 新增: 文档内容摘要 / 地图标题
+    type: str  # 🔥 新增: 'map_tile' 或 'document'
+    fullData: Optional[Dict[str, Any]] = None
 
 
 class SearchResponse(BaseModel):
