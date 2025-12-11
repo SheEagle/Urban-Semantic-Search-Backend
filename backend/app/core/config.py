@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     QDRANT_API_KEY: Optional[str] = None
     COLLECTION_NAME: str = "venice_historical_map"
     MAP_COLLECTION: str = "venice_historical_map"
-    DOC_COLLECTION: str = "venice_historical_text"
+    DOC_COLLECTION: str = "venice_historical_text_test"
 
     # Model Config
     MODEL_NAME: str = "PE-Core-B16-224"
