@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from backend.app.utils.global_state import init_resources
 from backend.app.api.v1.routers import router as v1_router
 
-app = FastAPI(title="Venice Search System")
+app = FastAPI(title="City of Water and Ink")
 
 # 1. CORS
 app.add_middleware(
@@ -23,7 +23,6 @@ app.include_router(v1_router, prefix="/api/v1")
 @app.on_event("startup")
 async def startup_event():
     print("🚀 System Starting... Initializing Global Resources.")
-    # 这里会触发 feature_extractor 的加载
     try:
         init_resources()
     except Exception as e:

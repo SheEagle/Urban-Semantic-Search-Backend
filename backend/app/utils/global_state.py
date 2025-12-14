@@ -41,9 +41,11 @@ class GlobalState:
             else:
                 # 服务器模式 (Docker)
                 cls._db_client = QdrantClient(
-                    host=host,
+                    host="127.0.0.1",
                     port=port,
-                    api_key=api_key
+                    api_key=api_key,
+                    grpc_port=6334,  # 👈 显式指定 gRPC 端口
+                    prefer_grpc=True  # 👈 强制开启 gRPC 模式
                 )
             # ----------------------------------
 
