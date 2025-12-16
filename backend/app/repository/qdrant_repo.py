@@ -1,28 +1,49 @@
-from typing import List, Optional, Any, Dict, Union
-from qdrant_client import QdrantClient, models
+import logging
+from typing import List, Optional, Any, Union
+from qdrant_client import models
 
 from backend.app.schema.search import SearchFilters
 from backend.app.utils.global_state import GlobalState
 
+# Configure logger
+logger = logging.getLogger(__name__)
+
 
 class QdrantRepository:
     def __init__(self):
-        # 依赖注入或单例获取
+        # Retrieve the database client via GlobalState (Singleton pattern)
         self.client = GlobalState.get_db()
 
     def _build_filters(self, filters: Optional[SearchFilters]) -> Optional[models.Filter]:
-        """将前端的 Filter 对象转换为 Qdrant 的 Filter 对象"""
+        """
+        Converts the frontend SearchFilters object into a Qdrant Filter object.
+        """
         if not filters:
             return None
 
         conditions = []
+
+        # Filter by Year Range
         if filters.year_start is not None:
-            conditions.append(models.FieldCondition(key="year", range=models.Range(gte=filters.year_start)))
+            conditions.append(models.FieldCondition(
+                key="year",
+                range=models.Range(gte=filters.year_start)
+            ))
         if filters.year_end is not None:
-            conditions.append(models.FieldCondition(key="year", range=models.Range(lte=filters.year_end)))
+            conditions.append(models.FieldCondition(
+                key="year",
+                range=models.Range(lte=filters.year_end)
+            ))
+
+        # Filter by Source Map
         if filters.map_source:
-            conditions.append(
-                models.FieldCondition(key="source_image", match=models.MatchValue(value=filters.map_source)))
+            conditions.append(models.FieldCondition(
+                key="source_image",
+                match=models.MatchValue(value=filters.map_source)
+            ))
+
+        # Filter by Geographic Bounding Box
+        # Expected format: [min_lon, min_lat, max_lon, max_lat]
         if filters.geo_bbox and len(filters.geo_bbox) == 4:
             conditions.append(
                 models.FieldCondition(
@@ -33,6 +54,7 @@ class QdrantRepository:
                     )
                 )
             )
+
         return models.Filter(must=conditions) if conditions else None
 
     def search(self,
@@ -41,29 +63,29 @@ class QdrantRepository:
                filters: Optional[SearchFilters] = None,
                limit: int = 10,
                score_threshold: float = 0.0,
-               vector_name: str = "",  # 如果使用 named vector
+               vector_name: str = "",  # For named vectors
                include_fields: Optional[List[str]] = None,
                exclude_fields: Optional[List[str]] = None,
                hnsw_ef: int = 32
-               ) -> List[Any]:
+               ) -> List[models.ScoredPoint]:
         """
-        通用的搜索方法
+        Generic search method for retrieving points from Qdrant.
         """
-        # 1. 构建过滤器
+        # 1. Build Query Filters
         q_filter = self._build_filters(filters)
 
-        # 2. 构建 Payload Selector (性能优化关键)
+        # 2. Build Payload Selector (Critical for network performance)
         payload_selector = None
         if include_fields:
             payload_selector = models.PayloadSelectorInclude(include=include_fields)
         elif exclude_fields:
             payload_selector = models.PayloadSelectorExclude(exclude=exclude_fields)
 
-        # 3. 构建搜索参数
+        # 3. Configure Search Parameters
         search_params = models.SearchParams(hnsw_ef=hnsw_ef, exact=False)
 
         try:
-            # 4. 执行查询
+            # 4. Prepare Arguments
             kwargs = {
                 "collection_name": collection_name,
                 "query": query_vector,
@@ -74,18 +96,17 @@ class QdrantRepository:
                 "search_params": search_params
             }
 
-            # 如果指定了 vector_name (针对文档的多向量场景)
+            # Handle named vectors (e.g., for multi-vector document search)
             if vector_name:
                 kwargs["using"] = vector_name
 
-            hits = self.client.query_points(**kwargs)
+            # 5. Execute Query
+            response = self.client.query_points(**kwargs)
 
-            # 兼容性处理：Qdrant 版本差异可能导致返回 tuple 或对象
-            if isinstance(hits, tuple): hits = hits[0]
-            if hasattr(hits, 'points'): hits = hits.points
+            # Return the list of points directly
+            return response.points
 
-            return hits
         except Exception as e:
-            # 这里可以记录日志，但最好抛出异常让 Service 层决定如何处理（是重试还是降级）
-            print(f"⚠️ [Repo] Qdrant Error in {collection_name}: {e}")
+            # Log the error and return an empty list so the service layer can handle it gracefully
+            logger.error(f"[Repo] Qdrant Error in collection '{collection_name}': {e}")
             return []
