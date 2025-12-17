@@ -22,11 +22,11 @@ app.include_router(v1_router, prefix="/api/v1")
 # 4. 启动预热 (单例初始化)
 @app.on_event("startup")
 async def startup_event():
-    print("🚀 System Starting... Initializing Global Resources.")
+    print("System Starting... Initializing Global Resources.")
     try:
         init_resources()
     except Exception as e:
-        print(f"⚠️ Warning: Resource initialization failed: {e}")
+        print(f"Warning: Resource initialization failed: {e}")
         print("Please check if your 'core' folder is in the root directory.")
 
 

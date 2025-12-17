@@ -100,8 +100,8 @@ class SearchService:
         t_start = time.time()
 
         # --- 1. Threshold Definitions ---
-        DOC_MIN_SCORE = 0.45
-        MAP_MIN_SCORE = 0.18
+        DOC_MIN_SCORE = 0.50
+        MAP_MIN_SCORE = 0.21
 
         # --- 2. Model Inference (CPU/GPU) ---
         t_encode = time.time()
@@ -170,7 +170,7 @@ class SearchService:
         # --- 5. Merge & Sort ---
         all_results = doc_results + map_results
         # Only keep results above the mean (Z-score > 0)
-        final_results = [r for r in all_results if r.score > 0]
+        final_results = [r for r in all_results if r.score > 0.75]
         final_results.sort(key=lambda x: x.score, reverse=True)
 
         logger.info(f"Total Search Time: {time.time() - t_start:.4f}s")
