@@ -2,7 +2,6 @@
 
 This repository contains the high-performance retrieval engine for the project. The backend is engineered to bridge historical Venetian cartography and archival records through advanced vector search and multimodal AI inference.
 
----
 
 ## Functional Modules
 
@@ -29,7 +28,7 @@ This module facilitates both Image-to-Image (I2I) and Image-to-Text (I2T) discov
 The heatmap service provides a lightweight data stream specifically designed for 3D visualization of information density and query relevance.
 
 * **Search Mode**: When a query is provided, the system performs a vector search across both collections and returns latitude, longitude, and relevance-weighted scores to visualize hotspots of historical interest.
----
+
 
 ## System Performance
 
@@ -39,7 +38,6 @@ The backend is optimized for sub-second responsiveness to support an exploratory
 * **Database Efficiency**: Optimized HNSW indexing in Qdrant enables raw retrieval times between 7 ms and 51 ms.
 * **Concurrency**: Sustains a 0% error rate under high-frequency sequential testing.
 
----
 
 ## Repository Structure
 
@@ -58,7 +56,6 @@ backend/
 
 ```
 
----
 
 ## Technology Stack
 
@@ -66,7 +63,6 @@ backend/
 * **Vector Database**: Qdrant (HNSW Indexing)
 * **AI Models**: PyTorch-based MiniLM and Perception Encoder
 
----
 
 ## Installation
 
